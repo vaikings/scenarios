@@ -1,0 +1,8 @@
+{
+    "scenarios": [
+        {
+            "id": 1,
+            "name": "default"
+        }
+    ]
+}
