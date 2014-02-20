@@ -11,7 +11,7 @@ require 'rspec/expectations'
 require 'rack/test'
 require 'json_spec'
 
-require './lib/scenario_db_setup'
+require './lib/scenarios/scenario_db_setup'
 
 JsonSpec.directory ="./fixtures/"
 
@@ -31,21 +31,17 @@ RSpec.configure do |config|
   config.include JsonSpec::Helpers
 end
 
-def configure_test_db
-  db_file = File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_testdb.sqlite3'
+def configure_db(db_filename)
+  db_file = File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/'+db_filename
   if !File.exists?(db_file)
     scenario_db_setup = ScenarioDbSetup.new
-    scenario_db_setup.setup_database('scenario_testdb.sqlite3')
-    scenario_db_setup.open_database
-    scenario_db_setup.create_scenarios_table
-    scenario_db_setup.create_routes_table
-    scenario_db_setup.create_testdata_table
+    scenario_db_setup.configure_database(db_filename)
   end
 end
 
-def reset_test_db
+def reset_db(db_filename)
   scenario_db_setup = ScenarioDbSetup.new
-  scenario_db_setup.setup_database('scenario_testdb.sqlite3')
+  scenario_db_setup.setup_database(db_filename)
   scenario_db_setup.open_database
 
   # remove all existing scenarios
@@ -53,10 +49,4 @@ def reset_test_db
   # add default scenario
   scenario_db_setup.add_scenario("default")
 end
-
-
-def add_scenario(name)
-
-end
-
 

@@ -20,11 +20,8 @@ class ScenarioDbSetup
       else
         db_filename = 'scenario_db.sqlite3'
       end
-      setup_database(db_filename)
-      open_database
-      create_scenarios_table
-      create_routes_table
-      create_testdata_table
+      configure_database(db_filename)  
+      
       puts 'database setup complete.'
     end
 
@@ -127,12 +124,20 @@ class ScenarioDbSetup
 
 
   def setup_database(db_filename)
-    self.db_file =  File.dirname(File.expand_path(__FILE__)) + '/../data/'+db_filename
+    self.db_file =  File.dirname(File.expand_path(__FILE__)) + '/data/'+db_filename
     # Create an empty database file
     if !File.exists?(self.db_file)
       File.open(self.db_file, 'w'){}
     end
   end
+
+  def configure_database(db_filename)
+    setup_database(db_filename)
+    open_database
+    create_scenarios_table
+    create_routes_table
+    create_testdata_table 
+  end 
 
   def open_database
     # Open the database
@@ -224,6 +229,8 @@ class ScenarioDbSetup
     testdata = self.db[:testdata]
     testdata.filter(:id=>testdata_id).delete
   end
+
+
 end
 
 options = {}

@@ -1,5 +1,5 @@
 require './spec/spec_helper'
-require './app'
+require './lib/scenarios/application/app'
 
 describe "scenario REST api" do
 
@@ -8,11 +8,11 @@ describe "scenario REST api" do
   end
 
   before(:all) do
-    configure_test_db()
+    configure_db('scenario_testdb.sqlite3')
   end
 
   before(:each) do
-    reset_test_db()
+    reset_db('scenario_testdb.sqlite3')
   end
   #specs
 

@@ -25,8 +25,22 @@ class ScenarioServer < Sinatra::Base
     enable :logging
   end
 
+
+#  def configure_db(db_filename)
+#    db_file = File.dirname(File.expand_path(__FILE__)) + '/../data/'+db_filename  
+#    if !File.exists?(db_file)
+#      scenario_db_setup = ScenarioDbSetup.new
+#      scenario_db_setup.configure_database(db_filename)
+#    end
+#  end
+
+ 
   before do
-    self.db ||= Sequel.sqlite('data/'+ settings.db_filename)
+#    configure_db(settings.db_filename)  
+    
+    file_path = File.dirname(File.expand_path(__FILE__)) + '/../data/'+settings.db_filename 
+    puts file_path
+    self.db ||= Sequel.sqlite(file_path)
     self.scenarios ||= self.db[:scenarios]
     self.routes ||= self.db[:routes]
     self.testdata ||= self.db[:testdata]
@@ -100,5 +114,5 @@ class ScenarioServer < Sinatra::Base
     return scenario
   end
 
-  run! if app_file == $0
 end
+
