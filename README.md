@@ -1,6 +1,6 @@
 # Scenarios
 
-TODO: Write a gem description
+This gem is used to setup a mock sinatra server. the routes can be defined via browser. Its main use case is to provide a mock rest api end point or for use with frank automation 
 
 ## Installation
 
@@ -18,7 +18,9 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+This would provide with the following binaries
+- scenarios 
+  This will start a sinatra server on localhost:4567
 
 ## Contributing
 
