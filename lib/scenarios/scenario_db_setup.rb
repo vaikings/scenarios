@@ -1,6 +1,5 @@
 #!/usr/env ruby
 require 'fileutils'
-require 'optparse'
 require 'sequel'
 require 'sequel/extensions/pretty_table'
 
@@ -125,8 +124,10 @@ class ScenarioDbSetup
 
   def setup_database(db_filename)
     self.db_file =  File.dirname(File.expand_path(__FILE__)) + '/data/'+db_filename
+
     # Create an empty database file
     if !File.exists?(self.db_file)
+      puts self.db_file
       File.open(self.db_file, 'w'){}
     end
   end
@@ -230,76 +231,8 @@ class ScenarioDbSetup
     testdata.filter(:id=>testdata_id).delete
   end
 
-
 end
 
-options = {}
-opt_parser = OptionParser.new do |opts|
 
-  options[:setup] = false
-  opts.on('--setup', 'Setup the scenario db') do |g|
-    options[:setup] = g
-  end
-
-  options[:testdb] = false
-  opts.on('--testdb', 'database filename') do |t|
-    options[:testdb] = t
-  end
-
-  options[:add_scenario] = []
-  opts.on('--add-scenario name', Array, 'Add a scenario to the database') do |a|
-    options[:add_scenario] = a
-  end
-
-  options[:delete_scenario] = nil
-  opts.on('--delete-scenario id', Integer, 'Delete a scenario from the database with a given row id') do |b|
-    options[:delete_scenario] = b
-  end
-
-  options[:add_route] = []
-  opts.on('--add-route path, fixture, scenario_id', Array, 'Add a route to a scenario') do |c|
-    options[:add_route] = c
-  end
-
-  options[:delete_route] = nil
-  opts.on('--delete-route id', Integer, "Delete a route from the database with a given row id") do |d|
-    options[:delete_route] = d
-  end
-
-  options[:add_testdata] = []
-  opts.on('--add-testdata name,value,scenario_id', Array, "Add a testdata value to a scenario") do |e|
-    options[:add_testdata] = e
-  end
-
-  options[:delete_testdata] = nil
-  opts.on('--delete-testdata id', Integer, "Delete a testdata from the database with a given row id") do |f|
-    options[:delete_route] = f
-  end
-
-  options[:scenarios] = false
-  opts.on('--scenarios', 'List the scenarios in the database') do |h|
-    options[:scenarios] = h
-  end
-
-  options[:routes] = false
-  opts.on('--routes', 'List the routes in the database') do |i|
-    options[:routes] = i
-  end
-
-  opts.on('-h', '--help', 'Display this screen') do
-    puts opts
-    exit
-  end
-end
-
-begin
-  opt_parser.parse!
-rescue OptionParser::ParseError => error
-  $stderr.puts error
-  $stderr.puts '(-h or --help will show valid options)'
-  exit 1
-end
-
-ScenarioDbSetup.new(options)
 
 

@@ -2,6 +2,7 @@ require 'sinatra'
 require 'sinatra/respond_with'
 require 'sequel'
 require 'json'
+require_relative '../scenario_db_setup'
 
 class ScenarioServer < Sinatra::Base
 
@@ -26,20 +27,19 @@ class ScenarioServer < Sinatra::Base
   end
 
 
-#  def configure_db(db_filename)
-#    db_file = File.dirname(File.expand_path(__FILE__)) + '/../data/'+db_filename  
-#    if !File.exists?(db_file)
-#      scenario_db_setup = ScenarioDbSetup.new
-#      scenario_db_setup.configure_database(db_filename)
-#    end
-#  end
+ def configure_db(db_filename)
+   db_file = File.dirname(File.expand_path(__FILE__)) + '/../data/'+db_filename  
+   if !File.exists?(db_file)
+     scenario_db_setup = ScenarioDbSetup.new
+     scenario_db_setup.configure_database(db_filename)
+   end
+ end
 
  
   before do
-#    configure_db(settings.db_filename)  
+   configure_db(settings.db_filename)  
     
     file_path = File.dirname(File.expand_path(__FILE__)) + '/../data/'+settings.db_filename 
-    puts file_path
     self.db ||= Sequel.sqlite(file_path)
     self.scenarios ||= self.db[:scenarios]
     self.routes ||= self.db[:routes]
