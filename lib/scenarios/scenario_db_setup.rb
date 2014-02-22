@@ -231,6 +231,22 @@ class ScenarioDbSetup
     testdata.filter(:id=>testdata_id).delete
   end
 
+  # helper functions
+  def get_last_scenario_id
+    scenarios = self.db[:scenarios]
+    return scenarios.reverse_order(:id).first[:id]
+  end
+
+  def get_last_routes_id
+    routes = self.db[:routes]
+    return routes.reverse_order(:id).first[:id]
+  end
+
+  def get_last_testdata_id
+    testdata = self.db[:testdata]
+    return testdata.reverse_order(:id).first[:id]
+  end
+
 end
 
 

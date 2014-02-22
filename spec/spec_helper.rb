@@ -30,23 +30,3 @@ RSpec.configure do |config|
   config.include Rack::Test::Methods
   config.include JsonSpec::Helpers
 end
-
-def configure_db(db_filename)
-  db_file = File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/'+db_filename
-  if !File.exists?(db_file)
-    scenario_db_setup = ScenarioDbSetup.new
-    scenario_db_setup.configure_database(db_filename)
-  end
-end
-
-def reset_db(db_filename)
-  scenario_db_setup = ScenarioDbSetup.new
-  scenario_db_setup.setup_database(db_filename)
-  scenario_db_setup.open_database
-
-  # remove all existing scenarios
-  scenario_db_setup.reset_scenarios
-  # add default scenario
-  scenario_db_setup.add_scenario("default")
-end
-

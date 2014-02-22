@@ -7,13 +7,22 @@ describe "scenario REST api" do
     ScenarioServer
   end
 
-  before(:all) do
-    configure_db('scenario_testdb.sqlite3')
+  attr_accessor :scenario_db
+
+  before do
+    db_filename = 'scenario_testdb.sqlite3'
+    self.scenario_db = ScenarioDbSetup.new
+    db_file = File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/'+db_filename
+    if !File.exists?(db_file)
+      self.scenario_db.configure_database(db_filename)
+    end
   end
 
   before(:each) do
-    reset_db('scenario_testdb.sqlite3')
+    self.scenario_db.reset_scenarios
+    self.scenario_db.add_scenario("default")
   end
+
   #specs
 
   it 'GET /scenarios' do
@@ -25,12 +34,9 @@ describe "scenario REST api" do
   end
 
   it 'GET /scenarios/{scenario_id}' do
-    post '/scenarios/new',"default",{}
+    last_scenario_id = self.scenario_db.get_last_scenario_id
 
-    resp = parse_json(last_response.body)
-    url= resp["url"]
-
-    get url
+    get '/scenarios/'+last_scenario_id.to_s
 
     expect(last_response.status).to eq(200)
     last_response.body.should be_json_eql(load_json("default_scenario.json")).excluding("id")
@@ -41,16 +47,25 @@ describe "scenario REST api" do
 
     expect(last_response.status).to eq(200)
     last_response.body.should have_json_path("url")
+
   end
 
   it 'DELETE /scenarios/:scenario_id' do
-    post '/scenarios/new',"default",{}
+    last_scenario_id = self.scenario_db.get_last_scenario_id
 
-    resp = parse_json(last_response.body)
-    url= resp["url"]
-
-    delete url
+    delete '/scenarios/'+last_scenario_id.to_s
     expect(last_response.status).to eq(200)
+  end
+
+  it 'POST /scenarios/:scenario_id/routes/new' do
+    last_scenario_id = self.scenario_db.get_last_scenario_id
+
+    content = '{"path":"/v1/mystyle","fixture":"{\"json\":\"body\"}","request":"GET" }'
+    path = '/scenarios/'+last_scenario_id.to_s + '/routes/new'
+    post path, content, {}
+
+    expect(last_response.status).to eq(200)
+    #last_response.body.should have_json_path('url')
   end
 
 end 

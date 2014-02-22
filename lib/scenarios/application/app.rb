@@ -92,6 +92,19 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
+  post '/scenarios/:scenario_id/routes/new' do
+    puts request.body.read
+    puts params
+#    body = request.body.read
+#    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+#
+#      redirect('/scenarios')
+#    else
+#      route_id = add_route_for_scenario(request_type, path, fixture)
+#      [200]
+#    end
+  end
+
 #private methods
   private
   
