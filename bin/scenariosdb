@@ -2,10 +2,10 @@
 
 require 'optparse'
 begin
-  require 'scenarios/Scenario_db_setup.rb'
+  require 'scenarios/Scenario_db.rb'
 rescue LoadError
   require 'rubygems'
-  require 'scenarios/Scenario_db_setup.rb'
+  require 'scenarios/scenario_db.rb'
 end
 
 options = {}
@@ -75,4 +75,4 @@ rescue OptionParser::ParseError => error
   exit 1
 end
 
-ScenarioDbSetup.new(options) 
+ScenarioDB.new(options)

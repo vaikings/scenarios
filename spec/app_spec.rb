@@ -1,5 +1,6 @@
 require './spec/spec_helper'
 require './lib/scenarios/application/app'
+require './lib/scenarios/scenario_db'
 
 describe "scenario REST api" do
 
@@ -10,12 +11,10 @@ describe "scenario REST api" do
   attr_accessor :scenario_db
 
   before do
-    db_filename = 'scenario_testdb.sqlite3'
-    self.scenario_db = ScenarioDbSetup.new
-    db_file = File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/'+db_filename
-    if !File.exists?(db_file)
-      self.scenario_db.configure_database(db_filename)
-    end
+    options = {"db_file"=>File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/scenario_testdb.sqlite3'}
+    self.scenario_db = ScenarioDB.new(options)
+    self.scenario_db.configure_database()
+
   end
 
   before(:each) do

@@ -3,41 +3,41 @@ require 'fileutils'
 require 'sequel'
 require 'sequel/extensions/pretty_table'
 
-class ScenarioDbSetup
+class ScenarioDB
 
-  attr_accessor :db, :db_file
+  attr_accessor :db, :db_file, :dbfile_path, :scenarios, :routes, :testdata
 
   def initialize(options={})
+    if options[:db_file]
+      self.db_file = options[:db_file]
+    else
+      self.db_file = File.dirname(File.expand_path(__FILE__)) + '/data/scenario_db.sqlite3'
+    end
+
     handle_cli_options(options)
   end
 
   def handle_cli_options(options)
     if options[:setup]
-      db_filename = 'scenario_db.sqlite3'
-      if options[:testdb]
-        db_filename =  'scenario_testdb.sqlite3'
-      else
-        db_filename = 'scenario_db.sqlite3'
-      end
-      configure_database(db_filename)  
-      
+
+      configure_database
       puts 'database setup complete.'
     end
 
     if !options[:add_scenario].nil? && options[:add_scenario].length == 1
-      setup_database('scenario_db.sqlite3')
-      open_database
+      configure_database
+
       add_scenario(options[:add_scenario][0])
-      if self.db[:scenarios].count > 0
-        Sequel::PrettyTable.print(self.db[:scenarios])
+      if self.scenarios.count > 0
+        Sequel::PrettyTable.print(self.scenarios)
       else
         puts 'No records to display.'
       end
     end
 
     if !options[:delete_scenario].nil?
-      setup_database('scenario_db.sqlite3')
-      open_database
+      configure_database
+
       delete_scenario(options[:delete_scenario])
       if self.db[:scenarios].count > 0
         Sequel::PrettyTable.print(self.db[:scenarios])
@@ -47,84 +47,89 @@ class ScenarioDbSetup
     end
 
     if !options[:add_route].nil? && options[:add_route].length == 3
-      setup_database('scenario_db.sqlite3')
-      open_database
+      configure_database
+
       add_route_for_scenario(options[:add_route][0], options[:add_route][1], options[:add_route][2])
-      if self.db[:routes].count > 0
-        Sequel::PrettyTable.print(self.db[:routes])
+      if self.routes.count > 0
+        Sequel::PrettyTable.print(self.routes)
       else
         puts 'No records to display.'
       end
     end
 
     if !options[:delete_route].nil?
-      setup_database('scenario_db.sqlite3')
-      open_database
+      configure_database
+
       delete_route(options[:delete_route])
       if self.db[:routes].count > 0
-        Sequel::PrettyTable.print(self.db[:routes])
+        Sequel::PrettyTable.print(self.routes)
       else
         puts 'No records to display.'
       end
     end
 
     if !options[:add_testdata].nil? && options[:add_testdata].length == 3
-      setup_database('scenario_db.sqlite3')
-      open_database
+      configure_database
+
       add_testdata_for_scenario(options[:add_testdata][0], options[:add_testdata][1], options[:add_testdata][2])
-      if self.db[:testdata].count > 0
-        Sequel::PrettyTable.print(self.db[:testdata])
+      if self.testdata.count > 0
+        Sequel::PrettyTable.print(self.testdata)
       else
         puts 'No records to display.'
       end
     end
 
     if !options[:delete_testdata].nil?
-      setup_database('scenario_db.sqlite3')
-      open_database
+      configure_database
+
       delete_route(options[:delete_testdata])
-      if self.db[:testdata].count > 0
-        Sequel::PrettyTable.print(self.db[:testdata])
+      if self.testdata.count > 0
+        Sequel::PrettyTable.print(self.testdata)
       else
         puts 'No records to display.'
       end
     end
 
     if options[:scenarios]
-      setup_database('scenario_db.sqlite3')
-      open_database
-      if self.db[:scenarios].count > 0
-        Sequel::PrettyTable.print(self.db[:scenarios])
+      configure_database
+
+      if self.scenarios.count > 0
+        Sequel::PrettyTable.print(self.scenarios)
       else
         puts 'No records to display.'
       end
     end
 
     if options[:routes]
-      setup_database('scenario_db.sqlite3')
-      open_database
-      if self.db[:routes].count > 0
-        Sequel::PrettyTable.print(self.db[:routes])
+      configure_database
+
+      if self.routes.count > 0
+        Sequel::PrettyTable.print(self.routes)
       else
         puts 'No records to display.'
       end
     end
 
     if options[:testdata]
-      setup_database('scenario_db.sqlite3')
-      open_database
-      if self.db[:testdata].count > 0
-        Sequel::PrettyTable.print(self.db[:testdata])
+      configure_database
+
+      if self.testdata.count > 0
+        Sequel::PrettyTable.print(self.testdata)
       else
         puts 'No records to display.'
       end
     end
   end
 
+  def configure_database
+    setup_database
+    open_database
+    create_scenarios_table
+    create_routes_table
+    create_testdata_table
+  end
 
-  def setup_database(db_filename)
-    self.db_file =  File.dirname(File.expand_path(__FILE__)) + '/data/'+db_filename
-
+  def setup_database
     # Create an empty database file
     if !File.exists?(self.db_file)
       puts self.db_file
@@ -132,18 +137,12 @@ class ScenarioDbSetup
     end
   end
 
-  def configure_database(db_filename)
-    setup_database(db_filename)
-    open_database
-    create_scenarios_table
-    create_routes_table
-    create_testdata_table 
-  end 
-
   def open_database
     # Open the database
-    self.db = Sequel.sqlite(self.db_file)
-#    puts 'Loading the database file'
+    self.db ||= Sequel.sqlite(self.db_file)
+    self.scenarios ||= self.db[:scenarios]
+    self.routes ||= self.db[:routes]
+    self.testdata ||= self.db[:testdata]
   end
 
   def create_scenarios_table
@@ -160,20 +159,17 @@ class ScenarioDbSetup
   end
 
   def add_scenario(name)
-    scenarios = self.db[:scenarios]
+    scenarios = self.scenarios
     now = DateTime.now
     scenarios.insert(:name => name, :created_at => now, :updated_at => now)
-#    puts "<#Scenario name: #{name}>"
   end
 
   def delete_scenario(scenario_id)
-    scenarios = self.db[:scenarios]
-    scenarios.filter(:id => scenario_id).delete
+    self.scenarios.filter(:id => scenario_id).delete
   end
 
   def reset_scenarios
-    scenarios = self.db[:scenarios]
-    scenarios.delete
+    self.scenarios.delete
     create_scenarios_table
   end
 
@@ -193,15 +189,13 @@ class ScenarioDbSetup
   end
 
   def add_route_for_scenario(path, fixture, scenario_id)
-    routes = self.db[:routes]
     now = DateTime.now
-    routes.insert( :scenario_id => scenario_id, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
+    self.routes.insert( :scenario_id => scenario_id, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
 #    puts "<scenario_id: #{scenario_id} #Path: #{path} fixture: #{fixture}>"
   end
 
   def delete_route(route_id)
-    routes = self.db[:routes]
-    routes.filter(:id => route_id).delete
+    self.routes.filter(:id => route_id).delete
   end
 
   def create_testdata_table
@@ -220,32 +214,42 @@ class ScenarioDbSetup
   end
 
   def add_testdata_for_scenario(name, value, scenario_id)
-    testdata = self.db[:testdata]
     now = DateTime.now
-    testdata.insert(:name=>name, :value=>value,  :scenario_id => scenario_id, :created_at => now, :updated_at => now)
+    self.testdata.insert(:name=>name, :value=>value,  :scenario_id => scenario_id, :created_at => now, :updated_at => now)
 #    puts "<#Name: #{name} value: #{value} scenario_id: #{scenario_id}>"
   end
 
   def delete_testdata_for_scenario(testdata_id)
-    testdata = self.db[:testdata]
-    testdata.filter(:id=>testdata_id).delete
+    self.testdata.filter(:id=>testdata_id).delete
   end
 
   # helper functions
+
+  def get_ordered_scenarios
+    return self.scenarios.order(:name).select(:id, :name).to_a
+  end
+
+  def delete_scenario_for_id(scenario_id)
+    self.scenarios.filter(:id => scenario_id).delete
+  end
+
+  def get_scenario_for_id(scenario_id)
+    return self.scenarios.where(:id => scenario_id).first
+  end
+
   def get_last_scenario_id
-    scenarios = self.db[:scenarios]
-    return scenarios.reverse_order(:id).first[:id]
+    return self.scenarios.reverse_order(:id).first[:id]
   end
 
   def get_last_routes_id
-    routes = self.db[:routes]
-    return routes.reverse_order(:id).first[:id]
+    return self.routes.reverse_order(:id).first[:id]
   end
 
   def get_last_testdata_id
-    testdata = self.db[:testdata]
-    return testdata.reverse_order(:id).first[:id]
+    return self.testdata.reverse_order(:id).first[:id]
   end
+
+
 
 end
 

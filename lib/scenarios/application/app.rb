@@ -2,52 +2,40 @@ require 'sinatra'
 require 'sinatra/respond_with'
 require 'sequel'
 require 'json'
-require_relative '../scenario_db_setup'
+require_relative '../scenario_db'
 
 class ScenarioServer < Sinatra::Base
 
-  attr_accessor :db, :scenarios, :routes, :testdata
+  attr_accessor :db, :scenario_db, :scenarios, :routes, :testdata
   use Rack::MethodOverride
 
   configure :production do
     puts 'Production Environment'
+    set :db_file , File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/scenario_db.sqlite3'
     enable :logging
   end   
 
   configure :development do
     puts 'Development Environment'
-    set :db_filename, 'scenario_db.sqlite3'
+    set :db_file , File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/scenario_db.sqlite3'
     enable :logging
   end 
   
   configure :test do 
     puts 'Test Environment'
-    set :db_filename, 'scenario_testdb.sqlite3'
+    set :db_file , File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/scenario_testdb.sqlite3'
     enable :logging
   end
 
-
- def configure_db(db_filename)
-   db_file = File.dirname(File.expand_path(__FILE__)) + '/../data/'+db_filename  
-   if !File.exists?(db_file)
-     scenario_db_setup = ScenarioDbSetup.new
-     scenario_db_setup.configure_database(db_filename)
-   end
- end
-
- 
   before do
-   configure_db(settings.db_filename)  
-    
-    file_path = File.dirname(File.expand_path(__FILE__)) + '/../data/'+settings.db_filename 
-    self.db ||= Sequel.sqlite(file_path)
-    self.scenarios ||= self.db[:scenarios]
-    self.routes ||= self.db[:routes]
-    self.testdata ||= self.db[:testdata]
+    options = {"db_file"=>settings.db_file}
+    self.scenario_db = ScenarioDB.new(options)
+    self.scenario_db.configure_database()
   end
 
   get '/scenarios' do
-    ordered_scenarios = self.scenarios.order(:name).select(:id, :name).to_a
+
+    ordered_scenarios = self.scenario_db.get_ordered_scenarios
 
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
       erb :'index', :locals => { :scenarios => ordered_scenarios }
@@ -59,7 +47,7 @@ class ScenarioServer < Sinatra::Base
   end
 
   get '/scenarios/:scenario_id' do
-    selected_scenario = get_scenario_for_id(params[:scenario_id])
+    selected_scenario = self.scenario_db.get_scenario_for_id(params[:scenario_id])
 
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
       erb :'scenario', :locals => {'scenario'=>selected_scenario}
@@ -72,11 +60,11 @@ class ScenarioServer < Sinatra::Base
 
   post '/scenarios/new' do
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
-      add_new_scenario(params[:new_scenario])
+      self.scenario_db.add_scenario(params[:new_scenario])
       redirect('/scenarios')
     else
       name = request.body.read
-      scenario_id = add_new_scenario(name)
+      scenario_id = self.scenario_db.add_scenario(name)
 
       [200,{"url"=>"/scenarios/"+scenario_id.to_s}.to_json]
     end
@@ -84,10 +72,10 @@ class ScenarioServer < Sinatra::Base
 
   delete '/scenarios/:scenario_id' do
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
-      delete_scenario_for_id(params[:scenario_id])
+      self.scenario_db.delete_scenario_for_id(params[:scenario_id])
       redirect('/scenarios')
     else
-      delete_scenario_for_id(params[:scenario_id])
+      self.scenario_db.delete_scenario_for_id(params[:scenario_id])
       [200]
     end
   end
@@ -103,28 +91,6 @@ class ScenarioServer < Sinatra::Base
 #      route_id = add_route_for_scenario(request_type, path, fixture)
 #      [200]
 #    end
-  end
-
-#private methods
-  private
-  
-  def add_new_scenario(name)
-    p = { :name => name }
-    now = DateTime.now
-    p[:created_at] = now
-    p[:updated_at] = now
-
-    new_scenario_id = self.scenarios.insert(p)
-    return new_scenario_id
-  end
-
-  def delete_scenario_for_id(scenario_id)
-    scenarios.filter(:id => scenario_id).delete
-  end
-
-  def get_scenario_for_id(scenario_id)
-    scenario = self.scenarios.where(:id => scenario_id).first
-    return scenario
   end
 
 end

@@ -11,8 +11,6 @@ require 'rspec/expectations'
 require 'rack/test'
 require 'json_spec'
 
-require './lib/scenarios/scenario_db_setup'
-
 JsonSpec.directory ="./fixtures/"
 
 RSpec.configure do |config|
