@@ -32,7 +32,7 @@ opt_parser = OptionParser.new do |opts|
   end
 
   options[:add_route] = []
-  opts.on('--add-route path, fixture, scenario_id', Array, 'Add a route to a scenario') do |c|
+  opts.on('--add-route route_type, path, fixture, scenario_id', Array, 'Add a route to a scenario') do |c|
     options[:add_route] = c
   end
 

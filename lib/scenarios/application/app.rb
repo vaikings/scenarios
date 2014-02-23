@@ -11,24 +11,24 @@ class ScenarioServer < Sinatra::Base
 
   configure :production do
     puts 'Production Environment'
-    set :db_file , File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/scenario_db.sqlite3'
+    set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
     enable :logging
   end   
 
   configure :development do
     puts 'Development Environment'
-    set :db_file , File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/scenario_db.sqlite3'
+    set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
     enable :logging
   end 
   
   configure :test do 
     puts 'Test Environment'
-    set :db_file , File.dirname(File.expand_path(__FILE__)) + './lib/scenarios/data/scenario_testdb.sqlite3'
+    set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_testdb.sqlite3'
     enable :logging
   end
 
   before do
-    options = {"db_file"=>settings.db_file}
+    options = {:db_file=>settings.db_file}
     self.scenario_db = ScenarioDB.new(options)
     self.scenario_db.configure_database()
   end
@@ -71,26 +71,63 @@ class ScenarioServer < Sinatra::Base
   end
 
   delete '/scenarios/:scenario_id' do
+    self.scenario_db.delete_scenario_for_id(params[:scenario_id])
+
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
-      self.scenario_db.delete_scenario_for_id(params[:scenario_id])
       redirect('/scenarios')
     else
-      self.scenario_db.delete_scenario_for_id(params[:scenario_id])
       [200]
     end
   end
 
   post '/scenarios/:scenario_id/routes/new' do
-    puts request.body.read
-    puts params
-#    body = request.body.read
-#    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
-#
-#      redirect('/scenarios')
-#    else
-#      route_id = add_route_for_scenario(request_type, path, fixture)
-#      [200]
-#    end
+    json_body = JSON.parse(request.body.read)
+
+    route_id = self.scenario_db.add_route_for_scenario(json_body['route_type'],
+                                                       json_body['path'], json_body['fixture'], params[:scenario_id])
+
+    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+      redirect('/scenarios/'+params[:scenario_id])
+    else
+      content = {'url'=>'/scenarios/'+params[:scenario_id]+'/routes/'+route_id.to_s}.to_json
+      [200, content]
+    end
+  end
+
+  get '/scenarios/:scenario_id/routes' do
+    routes = self.scenario_db.get_routes_for_scenario(params[:scenario_id])
+
+    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+      erb :'scenario', :locals => { :routes => routes }
+    else
+      content_type 'application/json', :charset => 'utf-8'
+      content = {'routes'=>routes}.to_json
+
+      [200,content]
+    end
+  end
+
+  delete '/scenarios/:scenario_id/routes/:route_id' do
+    self.scenario_db.delete_route(params[:route_id])
+
+    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+      redirect('/scenarios/'+ params[:scenario_id] )
+    else
+      [200]
+    end
+  end
+
+  get '/scenarios/:scenario_id/routes/:route_id' do
+    route = self.scenario_db.get_route(params[:route_id])
+
+    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+      erb :'route', :locals => { :route => route }
+    else
+      content_type 'application/json', :charset => 'utf-8'
+      content = route.to_json
+
+      [200,content]
+    end
   end
 
 end

@@ -5,7 +5,7 @@ require 'sequel/extensions/pretty_table'
 
 class ScenarioDB
 
-  attr_accessor :db, :db_file, :dbfile_path, :scenarios, :routes, :testdata
+  attr_accessor :db, :db_file, :scenarios, :routes, :testdata
 
   def initialize(options={})
     if options[:db_file]
@@ -46,10 +46,10 @@ class ScenarioDB
       end
     end
 
-    if !options[:add_route].nil? && options[:add_route].length == 3
+    if !options[:add_route].nil? && options[:add_route].length == 4
       configure_database
 
-      add_route_for_scenario(options[:add_route][0], options[:add_route][1], options[:add_route][2])
+      add_route_for_scenario(options[:add_route][0], options[:add_route][1], options[:add_route][2], options[:add_route][3])
       if self.routes.count > 0
         Sequel::PrettyTable.print(self.routes)
       else
@@ -145,6 +145,8 @@ class ScenarioDB
     self.testdata ||= self.db[:testdata]
   end
 
+  #scenarios
+
   def create_scenarios_table
     # Create Scenarios table
     if !self.db.table_exists?(:scenarios)
@@ -161,7 +163,7 @@ class ScenarioDB
   def add_scenario(name)
     scenarios = self.scenarios
     now = DateTime.now
-    scenarios.insert(:name => name, :created_at => now, :updated_at => now)
+    return scenarios.insert(:name => name, :created_at => now, :updated_at => now)
   end
 
   def delete_scenario(scenario_id)
@@ -173,6 +175,24 @@ class ScenarioDB
     create_scenarios_table
   end
 
+  def get_ordered_scenarios
+    return self.scenarios.order(:name).select(:id, :name).to_a
+  end
+
+  def delete_scenario_for_id(scenario_id)
+    self.scenarios.filter(:id => scenario_id).delete
+  end
+
+  def get_scenario_for_id(scenario_id)
+    return self.scenarios.where(:id => scenario_id).first
+  end
+
+  def get_last_scenario_id
+    return self.scenarios.reverse_order(:id).first[:id]
+  end
+
+#routes
+
   def create_routes_table
     # Create the routes table
     if !self.db.table_exists?(:routes)
@@ -180,6 +200,7 @@ class ScenarioDB
       self.db.create_table :routes do
         primary_key :id
         foreign_key :scenario_id, :scenarios, :on_delete => :cascade, :on_update => :cascade
+        String :route_type
         String :path
         String :fixture
         DateTime :created_at
@@ -188,15 +209,30 @@ class ScenarioDB
     end
   end
 
-  def add_route_for_scenario(path, fixture, scenario_id)
+  def add_route_for_scenario(route_type, path, fixture, scenario_id)
     now = DateTime.now
-    self.routes.insert( :scenario_id => scenario_id, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
-#    puts "<scenario_id: #{scenario_id} #Path: #{path} fixture: #{fixture}>"
+    return self.routes.insert( :scenario_id => scenario_id, :route_type=>route_type, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
+#    puts "<scenario_id: #{scenario_id} #{}route_type} #Path: #{path} fixture: #{fixture}>"
   end
 
   def delete_route(route_id)
     self.routes.filter(:id => route_id).delete
   end
+
+  def get_routes_for_scenario(scenario_id)
+    return self.routes.filter(:scenario_id=>scenario_id).select(:id, :scenario_id,:route_type,:path,:fixture).to_a
+  end
+
+  def get_route(route_id)
+    return self.routes.where(:id => route_id).first
+  end
+
+  def get_last_routes_id
+    return self.routes.reverse_order(:id).first[:id]
+  end
+
+
+  #testdata
 
   def create_testdata_table
     # Create the testdata table
@@ -223,36 +259,8 @@ class ScenarioDB
     self.testdata.filter(:id=>testdata_id).delete
   end
 
-  # helper functions
-
-  def get_ordered_scenarios
-    return self.scenarios.order(:name).select(:id, :name).to_a
-  end
-
-  def delete_scenario_for_id(scenario_id)
-    self.scenarios.filter(:id => scenario_id).delete
-  end
-
-  def get_scenario_for_id(scenario_id)
-    return self.scenarios.where(:id => scenario_id).first
-  end
-
-  def get_last_scenario_id
-    return self.scenarios.reverse_order(:id).first[:id]
-  end
-
-  def get_last_routes_id
-    return self.routes.reverse_order(:id).first[:id]
-  end
-
   def get_last_testdata_id
     return self.testdata.reverse_order(:id).first[:id]
   end
 
-
-
 end
-
-
-
-
