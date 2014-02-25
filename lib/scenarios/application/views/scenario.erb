@@ -1,5 +1,46 @@
 <html>
 <body>
 <h1><%= scenario[:name] %></h1>
+<table>
+<thead>
+<tr>
+  <th>Request Type</th>
+  <th>Path</th>
+  <th>Fixture</th>
+</tr>
+</thead>
+<tbody>
+<% routes.each do |route| %>
+    <tr>
+      <td><%= route[:route_type] %></td>
+      <td><a href="/scenarios/<%= scenario[:id] %>/routes/<%= route[:id]%>"><%= route[:path] %></a></td>
+      <td><%= route[:fixture] %></td>
+      <td>
+        <form action="/scenarios/<%= scenario[:id] %>/routes/<%= route[:id]%>" method="post" style="display:inline;">
+          <input name="_method" value="delete" type="hidden"/>
+          <input type="submit" name="commit" value="Delete">
+        </form>
+      </td>
+    </tr>
+<% end %>
+</tbody>
+</table>
+<p>
+<form action="/scenarios/<%= scenario[:id] %>/routes/new" method="post" id="routeform">
+  <p>
+
+    <label>Request Type</label>
+    <input type="text" name="route_type"> <br>
+    <label>Path</label>
+    <input type="text" name="path"> <br>
+    <label>Fixture</label>
+    <textarea name="fixture" ></textarea>
+  </p>
+  <p>
+    <button type="submit">Submit</button>
+  </p>
+</form>
+</p>
+
 </body>
 </html>

@@ -48,9 +48,10 @@ class ScenarioServer < Sinatra::Base
 
   get '/scenarios/:scenario_id' do
     selected_scenario = self.scenario_db.get_scenario_for_id(params[:scenario_id])
+    routes = self.scenario_db.get_routes_for_scenario(params[:scenario_id])
 
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
-      erb :'scenario', :locals => {'scenario'=>selected_scenario}
+      erb :'scenario', :locals => {'scenario'=>selected_scenario, 'routes'=>routes}
     else
       content_type 'application/json', :charset => 'utf-8'
       content = selected_scenario.to_json
@@ -81,14 +82,15 @@ class ScenarioServer < Sinatra::Base
   end
 
   post '/scenarios/:scenario_id/routes/new' do
-    json_body = JSON.parse(request.body.read)
-
-    route_id = self.scenario_db.add_route_for_scenario(json_body['route_type'],
-                                                       json_body['path'], json_body['fixture'], params[:scenario_id])
-
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+      puts params
+      self.scenario_db.add_route_for_scenario(params['route_type'],
+                                                         params['path'], params['fixture'], params[:scenario_id])
       redirect('/scenarios/'+params[:scenario_id])
     else
+      json_body = JSON.parse(request.body.read)
+      route_id = self.scenario_db.add_route_for_scenario(json_body['route_type'],
+                                                         json_body['path'], json_body['fixture'], params[:scenario_id])
       content = {'url'=>'/scenarios/'+params[:scenario_id]+'/routes/'+route_id.to_s}.to_json
       [200, content]
     end
@@ -119,6 +121,7 @@ class ScenarioServer < Sinatra::Base
 
   get '/scenarios/:scenario_id/routes/:route_id' do
     route = self.scenario_db.get_route(params[:route_id])
+    puts route
 
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
       erb :'route', :locals => { :route => route }

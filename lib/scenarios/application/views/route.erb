@@ -1,0 +1,30 @@
+<html>
+<body>
+<h1><%= route[:path] %></h1>
+<table>
+  <caption>Route</caption>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Scenario ID</th>
+    <th>Route Type</th>
+    <th>Path</th>
+    <th>Fixture</th>
+    <th>Created At</th>
+    <th>Updated At</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td><%=route[:id]%></td>
+  <td><%=route[:scenario_id]%></td>
+  <td><%=route[:route_type]%></td>
+  <td><%=route[:path]%></td>
+  <td><%=route[:fixture]%></td>
+  <td><%=route[:created_at]%></td>
+  <td><%=route[:updated_at]%></td>
+  </tr>
+</tbody>
+</table>
+</body>
+</html>
