@@ -33,6 +33,15 @@ class ScenarioServer < Sinatra::Base
     self.scenario_db.configure_database()
   end
 
+  def validate_json_string (fixture)
+    begin
+      data = JSON.parse(fixture)
+      return true
+    rescue JSON::ParserError => e
+      return false
+    end
+  end
+
   get '/scenarios' do
 
     ordered_scenarios = self.scenario_db.get_ordered_scenarios
@@ -47,11 +56,17 @@ class ScenarioServer < Sinatra::Base
   end
 
   get '/scenarios/:scenario_id' do
+
     selected_scenario = self.scenario_db.get_scenario_for_id(params[:scenario_id])
     routes = self.scenario_db.get_routes_for_scenario(params[:scenario_id])
 
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
-      erb :'scenario', :locals => {'scenario'=>selected_scenario, 'routes'=>routes}
+      if params.has_key?('error')
+        erb :'scenario', :locals => {'scenario'=>selected_scenario, 'routes'=>routes, 'error'=>params['error']}
+      else
+        erb :'scenario', :locals => {'scenario'=>selected_scenario, 'routes'=>routes, 'error'=>'' }
+      end
+
     else
       content_type 'application/json', :charset => 'utf-8'
       content = selected_scenario.to_json
@@ -83,10 +98,17 @@ class ScenarioServer < Sinatra::Base
 
   post '/scenarios/:scenario_id/routes/new' do
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
-      puts params
-      self.scenario_db.add_route_for_scenario(params['route_type'],
-                                                         params['path'], params['fixture'], params[:scenario_id])
-      redirect('/scenarios/'+params[:scenario_id])
+
+      valid_fixture = validate_json_string(params['fixture'])
+
+      if valid_fixture
+        self.scenario_db.add_route_for_scenario(params['route_type'],
+                                                params['path'], params['fixture'], params[:scenario_id])
+        redirect('/scenarios/'+params[:scenario_id])
+      else
+        redirect('/scenarios/'+params[:scenario_id]+'?error=invalid%20json')
+      end
+
     else
       json_body = JSON.parse(request.body.read)
       route_id = self.scenario_db.add_route_for_scenario(json_body['route_type'],
