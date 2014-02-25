@@ -3,43 +3,39 @@ require 'sinatra/respond_with'
 require 'sequel'
 require 'json'
 require_relative '../scenario_db'
+require_relative './app_helpers.rb'
 
 class ScenarioServer < Sinatra::Base
-
+  DEFAULT_SCENARIO = "default"
   attr_accessor :db, :scenario_db, :scenarios, :routes, :testdata
   use Rack::MethodOverride
 
   configure :production do
     puts 'Production Environment'
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
+    set :scenario, DEFAULT_SCENARIO
     enable :logging
   end   
 
   configure :development do
     puts 'Development Environment'
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
+    set :scenario, DEFAULT_SCENARIO
     enable :logging
   end 
   
   configure :test do 
     puts 'Test Environment'
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_testdb.sqlite3'
+    set :scenario, DEFAULT_SCENARIO
     enable :logging
   end
 
   before do
     options = {:db_file=>settings.db_file}
     self.scenario_db = ScenarioDB.new(options)
-    self.scenario_db.configure_database()
-  end
-
-  def validate_json_string (fixture)
-    begin
-      data = JSON.parse(fixture)
-      return true
-    rescue JSON::ParserError => e
-      return false
-    end
+    self.scenario_db.configure_database
+    self.scenario_db.add_scenario('default')
   end
 
   get '/scenarios' do
@@ -143,7 +139,7 @@ class ScenarioServer < Sinatra::Base
 
   get '/scenarios/:scenario_id/routes/:route_id' do
     route = self.scenario_db.get_route(params[:route_id])
-    puts route
+
 
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
       erb :'route', :locals => { :route => route }
@@ -154,6 +150,85 @@ class ScenarioServer < Sinatra::Base
       [200,content]
     end
   end
+
+  #default scenario
+
+  get '/scenario' do
+    [200, settings.scenario]
+  end
+
+  put '/scenario/:new_scenario' do
+    name = params[:new_scenario]
+    if valid_scenario(name)
+      settings.scenario = name
+      200
+    else
+      400
+    end
+  end
+
+  delete '/scenario' do
+    settings.scenario = DEFAULT_SCENARIO
+    200
+  end
+
+  # route path calls
+  get "/v*" do
+    content_type 'application/json'
+
+    route_type  = request.request_method.upcase
+    path   = request.path.downcase
+
+    fixture = get_fixture(route_type, path,settings.scenario)
+    if fixture.nil?
+      404
+    else
+      fixture
+    end
+  end
+
+  post "/v*" do
+    content_type 'application/json'
+
+    route_type  = request.request_method.upcase
+    path    = request.path.downcase
+
+    fixture = get_fixture(route_type, path,settings.scenario)
+    if fixture.nil?
+      404
+    else
+      fixture
+    end
+  end
+
+  put "/v*" do
+    content_type 'application/json'
+
+    route_type  = request.request_method.upcase
+    path   = request.path.downcase
+
+    fixture = get_fixture(route_type, path,settings.scenario)
+    if fixture.nil?
+      404
+    else
+      fixture
+    end
+  end
+
+  delete "/v*" do
+    content_type 'application/json'
+
+    route_type  = request.request_method.upcase
+    path    = request.path.downcase
+
+    fixture = get_fixture(route_type, path,settings.scenario)
+    if fixture.nil?
+      404
+    else
+      fixture
+    end
+  end
+
 
 end
 

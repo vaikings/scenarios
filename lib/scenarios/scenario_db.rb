@@ -161,9 +161,10 @@ class ScenarioDB
   end
 
   def add_scenario(name)
-    scenarios = self.scenarios
-    now = DateTime.now
-    return scenarios.insert(:name => name, :created_at => now, :updated_at => now)
+    if self.scenarios.where(:name => name).to_a.count == 0
+      now = DateTime.now
+      self.scenarios.insert(:name => name, :created_at => now, :updated_at => now)
+    end
   end
 
   def delete_scenario(scenario_id)
@@ -177,6 +178,10 @@ class ScenarioDB
 
   def get_ordered_scenarios
     return self.scenarios.order(:name).select(:id, :name).to_a
+  end
+
+  def get_scenario_names
+    return self.scenarios.map(:name)
   end
 
   def delete_scenario_for_id(scenario_id)
@@ -211,7 +216,9 @@ class ScenarioDB
 
   def add_route_for_scenario(route_type, path, fixture, scenario_id)
     now = DateTime.now
-    return self.routes.insert( :scenario_id => scenario_id, :route_type=>route_type, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
+    if self.routes.where(:scenario_id => scenario_id, route_type=> route_type, path=> path).to_a.count == 0
+      self.routes.insert(:scenario_id => scenario_id, :route_type=>route_type, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
+    end
 #    puts "<scenario_id: #{scenario_id} #{}route_type} #Path: #{path} fixture: #{fixture}>"
   end
 
@@ -221,6 +228,16 @@ class ScenarioDB
 
   def get_routes_for_scenario(scenario_id)
     return self.routes.filter(:scenario_id=>scenario_id).select(:id, :scenario_id,:route_type,:path,:fixture).to_a
+  end
+
+  def get_fixture_from_routes(route_type, path, scenario_name)
+
+    self.routes.left_outer_join(:scenarios, :id=>:scenario_id).where(:route_type=>route_type,
+                                                                          :path=>path,
+                                                                          :name=>scenario_name).map(:fixture).first
+
+
+    #TODO instead of returning first fixture, add checks to avoid duplicate insertions
   end
 
   def get_route(route_id)

@@ -28,3 +28,21 @@ RSpec.configure do |config|
   config.include Rack::Test::Methods
   config.include JsonSpec::Helpers
 end
+
+
+# helper methods
+
+def scenario
+  get '/scenario'
+  last_response.body
+end
+
+def reset_scenario
+  delete "/scenario"
+  expect(last_response.status).to eq(200)
+end
+
+def set_scenario(name)
+  put "/scenario/#{name}"
+  expect(last_response.status).to eq(200)
+end

@@ -2,7 +2,59 @@ require './spec/spec_helper'
 require './lib/scenarios/application/app'
 require './lib/scenarios/scenario_db'
 
-describe "scenario REST api" do
+
+describe "scenario api" do
+
+  attr_accessor :scenario_db
+
+  before(:all) do
+    options = {:db_file=>File.dirname(File.expand_path(__FILE__)) + '/../lib/scenarios/data/scenario_testdb.sqlite3'}
+    self.scenario_db = ScenarioDB.new(options)
+    self.scenario_db.configure_database()
+
+  end
+
+  def app
+    ScenarioServer
+  end
+
+  before(:each) do
+    reset_scenario
+  end
+
+  it "GET /scenario" do
+    get '/scenario'
+
+    expect(last_response.status).to eq(200)
+    expect(last_response.body).to eq("default")
+  end
+
+  it "PUT /scenario/:name" do
+    put '/scenario/test'
+
+    expect(last_response.status).to eq(400)
+    expect(scenario).to eq("default")
+  end
+
+  it "PUT /scenario/:name" do
+    self.scenario_db.add_scenario('test')
+
+    put '/scenario/test'
+
+    expect(last_response.status).to eq(200)
+    expect(scenario).to eq("test")
+  end
+
+  it "DELETE /scenario" do
+    delete "/scenario"
+
+    expect(last_response.status).to eq(200)
+    expect(scenario).to eq("default")
+  end
+
+end
+
+describe "scenarios and routes REST api" do
 
   def app
     ScenarioServer
@@ -92,7 +144,6 @@ describe "scenario REST api" do
 
     get '/scenarios/'+last_scenario_id.to_s+'/routes/'+last_route_id.to_s
     expect(last_response.status).to eq(200)
-    puts(last_response.body)
   end
 
 end 
