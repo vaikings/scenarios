@@ -19,6 +19,8 @@ class ScenarioServer < Sinatra::Base
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
     set :scenario, DEFAULT_SCENARIO
     enable :logging
+    set :server, %w[thin mongrel webrick]
+    set :port, 9090
   end   
 
   configure :development do
@@ -26,6 +28,8 @@ class ScenarioServer < Sinatra::Base
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
     set :scenario, DEFAULT_SCENARIO
     enable :logging
+    set :server, %w[thin mongrel webrick]
+    set :port, 9090
   end 
   
   configure :test do 
@@ -33,6 +37,8 @@ class ScenarioServer < Sinatra::Base
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_testdb.sqlite3'
     set :scenario, DEFAULT_SCENARIO
     enable :logging
+    set :server, %w[thin mongrel webrick]
+    set :port, 9090
   end
 
   before do
@@ -48,6 +54,12 @@ class ScenarioServer < Sinatra::Base
     self.scenario_db = ScenarioDB.new(options)
     self.scenario_db.configure_database
     self.scenario_db.add_scenario('default')
+  end
+
+  get '/' do
+    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+      redirect('/scenarios')
+    end
   end
 
   get '/scenarios' do

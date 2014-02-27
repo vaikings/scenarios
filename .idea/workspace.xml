@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ef638c72-41fe-44e2-a1f9-626aa693b0d3" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/scenarios/config.yml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/scenarios/application/app.rb" afterPath="$PROJECT_DIR$/lib/scenarios/application/app.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/scenarios/scenario_db.rb" afterPath="$PROJECT_DIR$/lib/scenarios/scenario_db.rb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="scenarios.iws" />
@@ -35,7 +32,7 @@
       <file leaf-file-name="app.rb" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/scenarios/application/app.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="0" selection-start="374" selection-end="374" vertical-scroll-proportion="-7.5" vertical-offset="0" max-vertical-offset="3765">
+            <state line="22" column="19" selection-start="721" selection-end="721" vertical-scroll-proportion="-12.692307" vertical-offset="0" max-vertical-offset="3945">
               <folding />
             </state>
           </provider>
@@ -825,7 +822,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/scenarios/application/app.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="0" selection-start="374" selection-end="374" vertical-scroll-proportion="-7.5" vertical-offset="0" max-vertical-offset="3765">
+        <state line="22" column="19" selection-start="721" selection-end="721" vertical-scroll-proportion="-12.692307" vertical-offset="0" max-vertical-offset="3945">
           <folding />
         </state>
       </provider>
