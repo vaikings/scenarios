@@ -132,7 +132,6 @@ class ScenarioDB
   def setup_database
     # Create an empty database file
     if !File.exists?(self.db_file)
-      puts self.db_file
       File.open(self.db_file, 'w'){}
     end
   end

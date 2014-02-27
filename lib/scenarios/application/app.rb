@@ -1,4 +1,5 @@
 require 'sinatra'
+require "sinatra/config_file"
 require 'sinatra/respond_with'
 require 'sequel'
 require 'json'
@@ -8,7 +9,10 @@ require_relative './app_helpers.rb'
 class ScenarioServer < Sinatra::Base
   DEFAULT_SCENARIO = "default"
   attr_accessor :db, :scenario_db, :scenarios, :routes, :testdata
+  register Sinatra::ConfigFile
   use Rack::MethodOverride
+
+  config_file File.dirname(File.expand_path(__FILE__)) + '/../config.yml'
 
   configure :production do
     puts 'Production Environment'
@@ -32,14 +36,21 @@ class ScenarioServer < Sinatra::Base
   end
 
   before do
-    options = {:db_file=>settings.db_file}
+
+    if settings.localdbfile
+      puts "using db: "+settings.localdbfile
+      options = {:db_file=>settings.localdbfile}
+    else
+      puts "using db: "+ settings.db_file
+      options = {:db_file=>settings.db_file}
+    end
+
     self.scenario_db = ScenarioDB.new(options)
     self.scenario_db.configure_database
     self.scenario_db.add_scenario('default')
   end
 
   get '/scenarios' do
-
     ordered_scenarios = self.scenario_db.get_ordered_scenarios
 
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
