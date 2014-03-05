@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'scenarios/application/app.rb'
+  require 'daemons'
+rescue LoadError
+  require 'rubygems'
+  require 'daemons'
+  require 'scenarios/application/app.rb'
+end
+
+Daemons.run_proc(
+  'scenario_service', # name of daemon
+#  :dir_mode => :normal
+#  :dir => File.join(pwd, 'tmp/pids'), # directory where pid file will be stored
+#  :backtrace => true,
+#  :monitor => true,
+  :log_output => true
+) do
+  ScenarioServer.run!
+end
+
