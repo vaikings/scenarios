@@ -215,7 +215,7 @@ class ScenarioDB
 
   def add_route_for_scenario(route_type, path, fixture, scenario_id)
     now = DateTime.now
-    if self.routes.where(:scenario_id => scenario_id, route_type=> route_type, path=> path).to_a.count == 0
+    if self.routes.where(:scenario_id => scenario_id, :route_type=> route_type, :path=> path).to_a.count == 0
       self.routes.insert(:scenario_id => scenario_id, :route_type=>route_type, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
     end
 #    puts "<scenario_id: #{scenario_id} #{}route_type} #Path: #{path} fixture: #{fixture}>"
