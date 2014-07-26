@@ -42,7 +42,6 @@ class ScenarioServer < Sinatra::Base
   end
 
   before do
-
     if settings.localdbfile
       puts "using db: "+settings.localdbfile
       options = {:db_file=>settings.localdbfile}
@@ -54,6 +53,10 @@ class ScenarioServer < Sinatra::Base
     self.scenario_db = ScenarioDB.new(options)
     self.scenario_db.configure_database
     self.scenario_db.add_scenario('default')
+  end
+
+  after do
+    self.scenario_db.close_database
   end
 
   get '/' do

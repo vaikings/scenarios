@@ -143,6 +143,10 @@ class ScenarioDB
     self.routes ||= self.db[:routes]
     self.testdata ||= self.db[:testdata]
   end
+  
+  def close_database
+      self.db.disconnect
+  end
 
   #scenarios
 
