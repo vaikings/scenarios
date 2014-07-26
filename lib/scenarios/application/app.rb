@@ -199,7 +199,7 @@ class ScenarioServer < Sinatra::Base
   end
 
   # route path calls
-  get "/v*" do
+  get "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
@@ -213,7 +213,7 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  post "/v*" do
+  post "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
@@ -227,7 +227,7 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  put "/v*" do
+  put "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
@@ -241,7 +241,7 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  delete "/v*" do
+  delete "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
