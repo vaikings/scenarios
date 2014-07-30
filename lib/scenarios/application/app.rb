@@ -65,6 +65,10 @@ class ScenarioServer < Sinatra::Base
     self.scenario_db.add_scenario('default')
   end
 
+  after do
+    self.scenario_db.close_database
+  end
+
   get '/' do
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
       redirect('/scenarios')
@@ -205,7 +209,7 @@ class ScenarioServer < Sinatra::Base
   end
 
   # route path calls
-  get "/v*" do
+  get "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
@@ -219,7 +223,7 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  post "/v*" do
+  post "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
@@ -233,7 +237,7 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  put "/v*" do
+  put "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
@@ -247,7 +251,7 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  delete "/v*" do
+  delete "/*" do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
