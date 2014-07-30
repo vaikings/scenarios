@@ -1,2 +1,5 @@
 lib/scenarios/data/*.sqlite3
 *.gem
+scenario_service.output
+scenario_service.pid
+.idea

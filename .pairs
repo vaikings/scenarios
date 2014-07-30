@@ -1,0 +1,9 @@
+# .pairs - configuration for 'git pair'
+pairs:
+  # <initials>: <Firstname> <Lastname>[; <email-id>]
+  vk: Vaibhav Bhatia; vaikings
+email:
+  prefix: 
+  domain: gmail.com
+  # no_solo_prefix: true
+#global: true

@@ -1,5 +1,5 @@
 require 'sinatra'
-require "sinatra/config_file"
+require 'sinatra/config_file'
 require 'sinatra/respond_with'
 require 'sequel'
 require 'json'
@@ -7,42 +7,51 @@ require_relative '../scenario_db'
 require_relative './app_helpers.rb'
 
 class ScenarioServer < Sinatra::Base
-  DEFAULT_SCENARIO = "default"
+  DEFAULT_SCENARIO = 'default'
   attr_accessor :db, :scenario_db, :scenarios, :routes, :testdata
   register Sinatra::ConfigFile
   use Rack::MethodOverride
 
-  config_file File.dirname(File.expand_path(__FILE__)) + '/../config.yml'
+  #config_file File.expand_path('~/.scenarios') + '/config.yml'
 
   configure :production do
     puts 'Production Environment'
+    config_file File.expand_path('~/.scenarios') + '/config.yml'
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
     set :scenario, DEFAULT_SCENARIO
     enable :logging
     set :server, %w[thin mongrel webrick]
-    set :port, 9090
+    set :port, 4567
   end   
 
   configure :development do
     puts 'Development Environment'
+    config_file File.expand_path('~/.scenarios') + '/config.yml'
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
     set :scenario, DEFAULT_SCENARIO
     enable :logging
     set :server, %w[thin mongrel webrick]
-    set :port, 9090
+    if settings.localport
+      set :port, settings.localport
+    else
+      set :port, 4567
+    end
+
   end 
   
   configure :test do 
     puts 'Test Environment'
+    config_file File.expand_path('~/.scenarios') + '/testconfig.yml'
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_testdb.sqlite3'
     set :scenario, DEFAULT_SCENARIO
     enable :logging
     set :server, %w[thin mongrel webrick]
-    set :port, 9090
+    set :port, 4567
   end
 
   before do
 
+    # configure database
     if settings.localdbfile
       puts "using db: "+settings.localdbfile
       options = {:db_file=>settings.localdbfile}
