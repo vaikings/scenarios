@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    scenario_server (0.0.3)
+    scenario_server (0.0.5)
       daemons (~> 1.1)
       sequel (= 4.7)
       sinatra (~> 1.4)
