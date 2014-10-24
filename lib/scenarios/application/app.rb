@@ -31,7 +31,7 @@ class ScenarioServer < Sinatra::Base
     set :scenario, DEFAULT_SCENARIO
     enable :logging
     set :server, %w[thin mongrel webrick]
-    if settings.localport
+    if defined?(settings.localport)
       set :port, settings.localport
     else
       set :port, 4567
@@ -52,7 +52,7 @@ class ScenarioServer < Sinatra::Base
   before do
 
     # configure database
-    if settings.localdbfile
+    if defined?(settings.localdbfile)
       puts "using db: "+settings.localdbfile
       options = {:db_file=>settings.localdbfile}
     else
