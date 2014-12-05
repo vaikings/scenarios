@@ -1,0 +1,2 @@
+1. Add support for status code
+2. scenario server should run with postgres too
