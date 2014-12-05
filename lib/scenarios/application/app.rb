@@ -12,9 +12,7 @@ class ScenarioServer < Sinatra::Base
   register Sinatra::ConfigFile
   use Rack::MethodOverride
 
-  #config_file File.expand_path('~/.scenarios') + '/config.yml'
-
-  configure :production do
+	configure :production do
     puts 'Production Environment'
     config_file File.expand_path('~/.scenarios') + '/config.yml'
     set :db_file , File.dirname(File.expand_path(__FILE__)) + '/../data/scenario_db.sqlite3'
@@ -50,8 +48,6 @@ class ScenarioServer < Sinatra::Base
   end
 
   before do
-
-    # configure database
     if defined?(settings.localdbfile)
       puts "using db: "+settings.localdbfile
       options = {:db_file=>settings.localdbfile}
@@ -176,7 +172,6 @@ class ScenarioServer < Sinatra::Base
   get '/scenarios/:scenario_id/routes/:route_id' do
     route = self.scenario_db.get_route(params[:route_id])
 
-
     if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
       erb :'route', :locals => { :route => route }
     else
@@ -209,13 +204,24 @@ class ScenarioServer < Sinatra::Base
   end
 
   # route path calls
-  get "/*" do
+  get '/*' do		
     content_type 'application/json'
+
+		#TODO: Validate scene from the list of scenarios
+		ordered_scenarios = self.scenario_db.get_ordered_scenarios
+
+
+		#TODO: dry up the implementation 
+		#TODO: add ignore scene header 
+		current_scenario = settings.scenario 
+    if (request.env['HTTP_SCENE'])
+			current_scenario = request.env['HTTP_SCENE']
+		end
 
     route_type  = request.request_method.upcase
     path   = request.path.downcase
 
-    fixture = get_fixture(route_type, path,settings.scenario)
+    fixture = get_fixture(route_type, path, current_scenario)
     if fixture.nil?
       404
     else
@@ -223,13 +229,18 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  post "/*" do
+  post '/*' do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
     path    = request.path.downcase
 
-    fixture = get_fixture(route_type, path,settings.scenario)
+		current_scenario = settings.scenario 
+    if (request.env['HTTP_SCENE'])
+			current_scenario = request.env['HTTP_SCENE']
+		end
+
+    fixture = get_fixture(route_type, path,current_scenario)
     if fixture.nil?
       404
     else
@@ -237,13 +248,19 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  put "/*" do
+  put '/*' do
     content_type 'application/json'
+
 
     route_type  = request.request_method.upcase
     path   = request.path.downcase
 
-    fixture = get_fixture(route_type, path,settings.scenario)
+		current_scenario = settings.scenario 
+    if (request.env['HTTP_SCENE'])
+			current_scenario = request.env['HTTP_SCENE']
+		end
+
+    fixture = get_fixture(route_type, path,current_scenario)
     if fixture.nil?
       404
     else
@@ -251,20 +268,24 @@ class ScenarioServer < Sinatra::Base
     end
   end
 
-  delete "/*" do
+  delete '/*' do
     content_type 'application/json'
 
     route_type  = request.request_method.upcase
     path    = request.path.downcase
 
-    fixture = get_fixture(route_type, path,settings.scenario)
+		current_scenario = settings.scenario 
+    if (request.env['HTTP_SCENE'])
+			current_scenario = request.env['HTTP_SCENE']
+		end
+
+    fixture = get_fixture(route_type, path,current_scenario)
     if fixture.nil?
       404
     else
       fixture
     end
   end
-
 
 end
 
