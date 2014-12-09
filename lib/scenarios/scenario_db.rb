@@ -46,10 +46,10 @@ class ScenarioDB
       end
     end
 
-    if !options[:add_route].nil? && options[:add_route].length == 4
+    if !options[:add_route].nil? && options[:add_route].length == 6
       configure_database
 
-      add_route_for_scenario(options[:add_route][0], options[:add_route][1], options[:add_route][2], options[:add_route][3])
+      add_route_for_scenario(options[:add_route][0], options[:add_route][1], options[:add_route][2], options[:add_route][3], options[:add_route][4], options[:add_route][5])
       if self.routes.count > 0
         Sequel::PrettyTable.print(self.routes)
       else
@@ -210,6 +210,8 @@ class ScenarioDB
         foreign_key :scenario_id, :scenarios, :on_delete => :cascade, :on_update => :cascade
         String :route_type
         String :path
+				Integer :status_code
+				String :headers
         String :fixture
         DateTime :created_at
         DateTime :updated_at
@@ -217,10 +219,10 @@ class ScenarioDB
     end
   end
 
-  def add_route_for_scenario(route_type, path, fixture, scenario_id)
-    now = DateTime.now
+  def add_route_for_scenario(route_type, path, status_code, headers, fixture, scenario_id)
+		now = DateTime.now
     if self.routes.where(:scenario_id => scenario_id, :route_type=> route_type, :path=> path).to_a.count == 0
-      self.routes.insert(:scenario_id => scenario_id, :route_type=>route_type, :path => path, :fixture => fixture, :created_at => now, :updated_at => now)
+      self.routes.insert(:scenario_id => scenario_id, :route_type=> route_type, :path => path, :status_code => status_code, :headers => headers, :fixture => fixture, :created_at => now, :updated_at => now)
     end
 #    puts "<scenario_id: #{scenario_id} #{}route_type} #Path: #{path} fixture: #{fixture}>"
   end
@@ -230,17 +232,14 @@ class ScenarioDB
   end
 
   def get_routes_for_scenario(scenario_id)
-    return self.routes.filter(:scenario_id=>scenario_id).select(:id, :scenario_id,:route_type,:path,:fixture).to_a
+    return self.routes.filter(:scenario_id=>scenario_id).select(:id, :scenario_id, :route_type, :path, :status_code, :headers, :fixture).to_a
   end
 
   def get_fixture_from_routes(route_type, path, scenario_name)
-
     self.routes.left_outer_join(:scenarios, :id=>:scenario_id).where(:route_type=>route_type,
                                                                           :path=>path,
-                                                                          :name=>scenario_name).map(:fixture).first
+                                                                          :name=>scenario_name).map([:status_code, :headers, :fixture]).first
 
-
-    #TODO instead of returning first fixture, add checks to avoid duplicate insertions
   end
 
   def get_route(route_id)

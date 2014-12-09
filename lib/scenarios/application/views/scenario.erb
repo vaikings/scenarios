@@ -10,6 +10,8 @@
 <tr>
   <th>Request Type</th>
   <th>Path</th>
+  <th>Status Code</th>
+  <th>Headers</th>
   <th>Fixture</th>
 </tr>
 </thead>
@@ -18,6 +20,8 @@
     <tr>
       <td><%= route[:route_type] %></td>
       <td><a href="/scenarios/<%= scenario[:id] %>/routes/<%= route[:id]%>"><%= route[:path] %></a></td>
+      <td><%= route[:status_code] %></td>
+      <td><%= route[:headers] %></td>
       <td><%= route[:fixture] %></td>
       <td>
         <form action="/scenarios/<%= scenario[:id] %>/routes/<%= route[:id]%>" method="post" style="display:inline;">
@@ -40,9 +44,14 @@
       <option value="DELETE">DELETE</option>
       <option value="PUT">PUT</option>
     </select>
-    <br>
-    <label>Path</label>
+		<br>
+		<label>Path</label>
     <input type="text" name="path"> <br>
+		<label>Status Code</label>
+    <input type="text" name="status_code"> <br>
+    <label>Headers</label>
+    <textarea name="headers" rows="5" ></textarea>
+     </p>
     <label>Fixture</label>
     <textarea name="fixture" rows="10" ></textarea>
   </p>

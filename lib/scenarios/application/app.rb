@@ -87,8 +87,8 @@ class ScenarioServer < Sinatra::Base
 
     selected_scenario = self.scenario_db.get_scenario_for_id(params[:scenario_id])
     routes = self.scenario_db.get_routes_for_scenario(params[:scenario_id])
-
-    if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
+    
+		if (request.env['HTTP_ACCEPT'] && request.env['HTTP_ACCEPT'].include?('text/html'))
       if params.has_key?('error')
         erb :'scenario', :locals => {'scenario'=>selected_scenario, 'routes'=>routes, 'error'=>params['error']}
       else
@@ -131,7 +131,11 @@ class ScenarioServer < Sinatra::Base
 
       if valid_fixture
         self.scenario_db.add_route_for_scenario(params['route_type'],
-                                                params['path'], params['fixture'], params[:scenario_id])
+                                                params['path'], 
+																								params['status_code'],
+																								params['headers'],
+																								params['fixture'], 
+																								params[:scenario_id])
         redirect('/scenarios/'+params[:scenario_id])
       else
         redirect('/scenarios/'+params[:scenario_id]+'?error=invalid%20json')
@@ -140,7 +144,11 @@ class ScenarioServer < Sinatra::Base
     else
       json_body = JSON.parse(request.body.read)
       route_id = self.scenario_db.add_route_for_scenario(json_body['route_type'],
-                                                         json_body['path'], json_body['fixture'], params[:scenario_id])
+                                                         json_body['path'],
+																												 json_body['status_code'],
+																												 json_body['headers'], 
+																												 json_body['fixture'], 
+																												 params[:scenario_id])
       content = {'url'=>'/scenarios/'+params[:scenario_id]+'/routes/'+route_id.to_s}.to_json
       [200, content]
     end
@@ -205,8 +213,6 @@ class ScenarioServer < Sinatra::Base
 
   # route path calls
   get '/*' do		
-    content_type 'application/json'
-
 		#TODO: Validate scene from the list of scenarios
 		ordered_scenarios = self.scenario_db.get_ordered_scenarios
 
@@ -221,11 +227,19 @@ class ScenarioServer < Sinatra::Base
     route_type  = request.request_method.upcase
     path   = request.path.downcase
 
-    fixture = get_fixture(route_type, path, current_scenario)
-    if fixture.nil?
+    status_code, header, fixture = get_fixture(route_type, path, current_scenario)
+    if header.nil? || header == ""
+			header = {'Content-Type' => 'application/json'}
+		else
+			header = eval(header)			
+		end 
+
+		if fixture.nil?
       404
     else
-      fixture
+		  status status_code
+      headers header
+      body fixture
     end
   end
 
@@ -240,17 +254,16 @@ class ScenarioServer < Sinatra::Base
 			current_scenario = request.env['HTTP_SCENE']
 		end
 
-    fixture = get_fixture(route_type, path,current_scenario)
+    status_code, header, fixture = get_fixture(route_type, path, current_scenario)
     if fixture.nil?
       404
     else
-      fixture
+      [status_code, fixture]
     end
   end
 
   put '/*' do
     content_type 'application/json'
-
 
     route_type  = request.request_method.upcase
     path   = request.path.downcase
@@ -260,12 +273,14 @@ class ScenarioServer < Sinatra::Base
 			current_scenario = request.env['HTTP_SCENE']
 		end
 
-    fixture = get_fixture(route_type, path,current_scenario)
+    status_code, header, fixture = get_fixture(route_type, path, current_scenario)
     if fixture.nil?
       404
     else
-      fixture
+      [status_code, fixture]
     end
+    
+
   end
 
   delete '/*' do
@@ -279,11 +294,11 @@ class ScenarioServer < Sinatra::Base
 			current_scenario = request.env['HTTP_SCENE']
 		end
 
-    fixture = get_fixture(route_type, path,current_scenario)
+    status_code, header, fixture = get_fixture(route_type, path, current_scenario)
     if fixture.nil?
       404
     else
-      fixture
+      [status_code, fixture]
     end
   end
 

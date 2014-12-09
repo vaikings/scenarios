@@ -20,11 +20,14 @@ def default?(name)
 end
 
 def get_fixture(route_type, path, scenario_name)
-  fixture = self.scenario_db.get_fixture_from_routes(route_type, path, scenario_name)
-
+  status_code, header, fixture = self.scenario_db.get_fixture_from_routes(route_type, path, scenario_name)
+  
   if fixture.nil? and default?(scenario_name)
-    fixture = self.scenario_db.get_fixture_from_routes(route_type, path, 'default')
+    status_code, header, fixture = self.scenario_db.get_fixture_from_routes(route_type, path, 'default')
   end
 
-  fixture
+	if status_code == nil 
+	  status_code = 200
+	end
+  return status_code, header, fixture
 end
