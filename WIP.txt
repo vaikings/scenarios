@@ -1,3 +1,2 @@
 . scenario server should run with postgres too
-. improve UI
 . add mechanism so the response fixture can be refreshed. 

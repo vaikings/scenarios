@@ -1,21 +1,28 @@
 <html>
+<head>
+	<link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>				
+
 <body>
 <a href="/scenarios">Home</a>
 <br>
 
 <%= error %>
 <h2><%= scenario[:name] %></h2>
-<table>
-<thead>
-<tr>
-  <th>Request Type</th>
-  <th>Path</th>
-  <th>Status Code</th>
-  <th>Headers</th>
-  <th>Fixture</th>
-</tr>
-</thead>
-<tbody>
+<% if routes.count > 0 %> 
+	<table>
+  <thead>
+  <tr>
+    <th>Request Type</th>
+    <th>Path</th>
+    <th>Status Code</th>
+    <th>Headers</th>
+    <th>Fixture</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+	<tbody> 
+<% end %>				
 <% routes.each do |route| %>
     <tr>
       <td><%= route[:route_type] %></td>
@@ -33,12 +40,15 @@
 <% end %>
 </tbody>
 </table>
+<hr>
+<br>
+<br>
 <p>
 <form action="/scenarios/<%= scenario[:id] %>/routes/new" method="post" id="routeform">
   <p>
 
-    <label>Request Type</label>
-    <select name="route_type">
+	<label>Request Type</label> <br>
+    <select name="route_type" width="100" style="width: 100px">
       <option value="GET">GET</option>
       <option value="POST">POST</option>
       <option value="DELETE">DELETE</option>
@@ -49,14 +59,14 @@
     <input type="text" name="path"> <br>
 		<label>Status Code</label>
     <input type="text" name="status_code"> <br>
-    <label>Headers</label>
+		<label>Headers</label><br>
     <textarea name="headers" rows="5" ></textarea>
      </p>
-    <label>Fixture</label>
+		 <label>Fixture</label><br>
     <textarea name="fixture" rows="10" ></textarea>
   </p>
   <p>
-    <button type="submit">Submit</button>
+    <button type="submit"> Submit </button>
   </p>
 </form>
 </p>
