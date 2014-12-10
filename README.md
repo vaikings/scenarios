@@ -6,16 +6,21 @@ As the server is started for the first time, point your browser to http://localh
 Here a "default" scenario is present. You can add various routes to this scenario.
 
 for e.g. a sample route added would be
-GET , '/v1/mystyle' {"season":"summer"}
+GET , '/v1/season' {"temperature":"cold"}
 
-Now when you open browser and make a get request to 'http://localhost:4567/v1/mystyle' you will receive the json fixture passed in the route.  
+Now when you make a get request, e.g.  
+curl -i http://localhost:9000/v1/season
+you will receive the json fixture added for that route.  
 
-This server also lets you add different scenario and lets you add a different response {"season":"winter"} for the same api endpoint under different scenario. e.g. cold_weather
+Working with Scenarios :
 
-When you make a get request and then specify header SCENE with value as your scenario, the response under that scenario would be returned.
+This server also lets you add different scenarios and lets you add a different response {"temperature":"warm"} for the same api endpoint under different scenario. e.g. march
+
+When you make a get request and then specify header SCENE with value as your scenario name, the response under that scenario would be returned.
+e.g.
+curl -i -H "SCENE:march" http://localhost:9000/v1/season
 
 If you make a get request that is not defined for a particular scenario but is defined in the default scenario, then the response from the default scenario would be returned.
-
 
 ## Installation
 
