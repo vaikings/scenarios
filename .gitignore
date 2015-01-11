@@ -2,4 +2,8 @@ lib/scenarios/data/*.sqlite3
 *.gem
 scenario_service.output
 scenario_service.pid
+WIP.txt
 .idea
+.pairs
+.pryrc
+.rspec

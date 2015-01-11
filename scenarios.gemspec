@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["vaikings@gmail.com"]
   spec.summary       = %q{Scenarios is a sinatra server which returns mock json fixtures for routes in the current scenario}
   spec.description   = %q{This gem is useful for development where a mock rest api server is required and with frank UI test automation.}
-  spec.homepage      = 'https://bitbucket.org/vaikings/scenarios'
+  spec.homepage      = 'https://github.com/vaikings/scenarios'
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
