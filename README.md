@@ -1,26 +1,6 @@
 # Scenarios
 
-This gem is used to setup a quick local server using sinatra
-
-As the server is started for the first time, point your browser to http://localhost:4567/scenarios  
-Here a "default" scenario is present. You can add various routes to this scenario.
-
-for e.g. a sample route added would be
-GET , '/v1/season' {"temperature":"cold"}
-
-Now when you make a get request, e.g.  
-curl -i http://localhost:9000/v1/season
-you will receive the json fixture added for that route.  
-
-Working with Scenarios :
-
-This server also lets you add different scenarios and lets you add a different response {"temperature":"warm"} for the same api endpoint under different scenario. e.g. march
-
-When you make a get request and then specify header SCENE with value as your scenario name, the response under that scenario would be returned.
-e.g.
-curl -i -H "SCENE:march" http://localhost:9000/v1/season
-
-If you make a get request that is not defined for a particular scenario but is defined in the default scenario, then the response from the default scenario would be returned.
+This gem can be used to setup a quick local api server.
 
 ## Installation
 
@@ -28,32 +8,88 @@ Add this line to your application's Gemfile:
 
     gem 'scenario_server'
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
+Or manually install it:
 
     $ gem install scenario_server
+
+## Configuration
+
+A yaml file when provided at the following location
+> ~/.scenarios/config.yml
+
+can be used to define the port and path of the sqlite database holding the routes.
+If this file is not provided, the db file is created wherever the ruby gem is installed.
+
+#### Config.yml
+>localport: 4567
+>localdbfile: /Users/vaibhav/.scenarios/scenarios.sqlite3
 
 ## Usage
 
 The server can be started in daemon mode by
 
-scenario_service  start
+    scenario_service  start
 
-or
+or without a daemon mode
 
-without a daemon mode
+    scenario_service start -t
 
-scenario_service start -T
+### What are Scenarios
+Scenarios is a context in which you are using your local api server. Each scenario contains one or more routes.
 
-## Configuration
+e.g.
+1. Default
+  * GET , '/v1/season', 200, {"name":"summer","temperature":70}
+  * GET , '/v1/city' , 200, {"name":"Seattle"}
+1. Rainy
+  * GET , '/v1/season', 200, {"name":"rainy","temperature":50,"precipitation":5}
+1. Error
+  * GET , '/v1/season', 404, {"error":"sensors not found"}
+  * GET , '/v1/city' , 500, {"error":"server error"}
 
-a yaml file can be provided at the following location
-~/.scenarios/config.yml
-to hold the port to be used and the path of a sqlite database.
-If this file is not provided, the db file is created inside the
-gem folder.
+Scenarios are usually broken up as:
+* For handling most common api response: 'Default' Scenario server comes with the server and this cannot be deleted.
+* For handling alternate api response e.g. 'Rainy' with precipitation information in our current example
+* For handling error responses e.g. 'error'
 
-Please see sample_config.yml for more info.
+On startup, all responses returned from the server are from default scenario.
+
+### To fetch data from routes
+
+Make a request with scenario server url and path of the route with the correct request type. Also specify header **SCENE** with your scenario name,
+This will return the fixture under that scenario, with status code and headers specified
+e.g.
+
+    curl -X GET -H "SCENE:rainy" http://localhost:4567/v1/season
+
+If the header **SCENE** is not present, the current scenario set on the server would be used.
+
+will return
+` {"name":"rainy","temperature":50,"precipitation":5} `
+
+### To list all scenarios
+    curl http://localhost:4567/scenarios
+  or point the browser to http://localhost:4567/scenarios
+
+### To check the current scenario
+    curl http://localhost:4567/scenario
+  or point the browser to http://localhost:4567/scenario
+
+### To change the current scenario from 'default' to 'rainy'
+    curl -X PUT  http://localhost:4567/scenario/rainy -d ''
+
+Note: If you are not in 'default' scenario and make a call to a route which is not defined, server will also check 'default' for that route. If present, it will return data from that route else will give a 404.
+
+### To add a new scenario 'winter'
+    curl -X POST  http://localhost:4567/scenarios/new -d 'winter'
+or point the browser to http://localhost:4567/scenarios and add name in the text box below **New scenario** and then click **submit**.
+
+### To delete scenario 'winter'
+Given that winter scenario has an id **3**
+
+      curl -X DELETE  http://localhost:4567/scenarios/3
+
+### To get all routes from 'rainy' scenario
+Given that 'rainy' scenario has an id **2**
+
+      curl http://localhost:4567/scenarios/2/routes
