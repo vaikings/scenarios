@@ -236,9 +236,8 @@ class ScenarioDB
   end
 
   def get_fixture_from_routes(route_type, path, scenario_name)
-    self.routes.left_outer_join(:scenarios, :id=>:scenario_id).where(:route_type=>route_type,
-                                                                          :path=>path,
-                                                                          :name=>scenario_name).map([:status_code, :headers, :fixture]).first
+    self.routes.left_outer_join(:scenarios, 
+																:id=>:scenario_id).where{Sequel.&({:route_type => route_type, :name=>scenario_name}, Sequel.ilike(:path,path))}.map([:status_code,:headers,:fixture]).first
 
   end
 
