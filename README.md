@@ -38,12 +38,15 @@ or without a daemon mode
 Scenarios is a context in which you are using your local api server. Each scenario contains one or more routes.
 
 e.g.
-1. Default
-  * GET , '/v1/season', 200, {"name":"summer","temperature":70}
-  * GET , '/v1/city' , 200, {"name":"Seattle"}
-1. Rainy
+
+#####Default
+* GET , '/v1/season', 200, {"name":"summer","temperature":70}
+* GET , '/v1/city' , 200, {"name":"Seattle"}
+
+#####Rainy
   * GET , '/v1/season', 200, {"name":"rainy","temperature":50,"precipitation":5}
-1. Error
+
+#####Error
   * GET , '/v1/season', 404, {"error":"sensors not found"}
   * GET , '/v1/city' , 500, {"error":"server error"}
 
