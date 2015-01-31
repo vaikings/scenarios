@@ -19,7 +19,11 @@ class ScenarioServer < Sinatra::Base
     set :scenario, DEFAULT_SCENARIO
     enable :logging
     set :server, %w[thin mongrel webrick]
-    set :port, 4567
+    if defined?(settings.localport)
+      set :port, settings.localport
+    else
+      set :port, 4567
+    end
   end   
 
   configure :development do
